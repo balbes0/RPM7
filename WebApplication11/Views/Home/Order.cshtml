@@ -1,0 +1,56 @@
+﻿@{
+    ViewData["Title"] = "Оформление заказа";
+}
+
+<div class="container mt-5">
+    <h1 class="text-center">Оформление заказа</h1>
+
+    <div class="row mt-4">
+        <div class="col-md-7">
+            <h3>Информация о доставке</h3>
+            <form method="post" action="/Order/SubmitOrder">
+                <div class="form-group mb-3">
+                    <label for="address">Адрес доставки</label>
+                    <input type="text" class="form-control" id="address" name="address" placeholder="Введите ваш адрес" required>
+                </div>
+
+                <div class="form-group mb-3">
+                    <label for="deliveryMethod">Способ доставки</label>
+                    <select class="form-control" id="deliveryMethod" name="deliveryMethod" required>
+                        <option value="courier">Курьерская доставка</option>
+                        <option value="pickup">Самовывоз</option>
+                    </select>
+                </div>
+
+                <div class="form-group mb-3">
+                    <label for="paymentMethod">Способ оплаты</label>
+                    <select class="form-control" id="paymentMethod" name="paymentMethod" required>
+                        <option value="card">Картой онлайн</option>
+                        <option value="cash">Наличными при получении</option>
+                    </select>
+                </div>
+
+                <div class="form-group mb-3">
+                    <label for="comments">Комментарии к заказу</label>
+                    <textarea class="form-control" id="comments" name="comments" rows="3" placeholder="Дополнительные пожелания"></textarea>
+                </div>
+            </form>
+        </div>
+
+        <div class="col-md-5">
+            <h3>Ваш заказ</h3>
+            <ul class="list-group mb-3">
+                <li class="list-group-item d-flex justify-content-between">
+                    <span>Пельмень пельменский (2 шт.)</span>
+                    <strong>500 ₽</strong>
+                </li>
+                <li class="list-group-item d-flex justify-content-between">
+                    <span>Итоговая сумма</span>
+                    <strong>1500 ₽</strong>
+                </li>
+            </ul>
+
+            <button class="btn btn-success w-100 mt-3" type="submit">Оформить заказ</button>
+        </div>
+    </div>
+</div>

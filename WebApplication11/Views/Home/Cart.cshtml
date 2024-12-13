@@ -1,0 +1,48 @@
+﻿@{
+    ViewData["Title"] = "Корзина";
+
+    decimal totalAmount = 0;
+}
+
+@model IEnumerable<WebApplication11.Models.Cart>
+
+<div style="margin-top:20px">
+    <div class="row">
+        @foreach (var item in Model)
+        {
+            totalAmount += item.Product.Price * item.Quantity;
+            <div class="col-md-3 mb-3">
+                <div class="card" style="width: 18rem; height: 28rem; overflow: hidden;">
+                    <img src="@item.Product.PathToImage" class="card-img-top" alt="not found" style="height: 200px; object-fit: cover;">
+                    <div class="card-body" style="display: flex; flex-direction: column; justify-content: space-between;">
+                        <h5 class="card-title" style="height: 3rem; overflow: hidden; text-overflow: ellipsis;">@item.Product.ProductName</h5>
+                        <p class="card-text" style="height: 4rem; overflow: hidden; text-overflow: ellipsis;">@item.Product.Description</p>
+                        <p class="card-text"><strong>Цена:</strong> @item.Product.Price ₽</p>
+
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <form action="/Home/RemoveCartItem" method="post" style="margin-top: auto;">
+                                <input type="hidden" name="productId" value="@item.Product.IdProduct" />
+                                <input type="hidden" name="redirectTo" value="Cart" />
+                                <button type="submit" class="btn btn-danger">Из корзины</button>
+                            </form>
+
+                            <form action="/Home/UpdateCartQuantity" method="post" style="display: flex; align-items: center;">
+                                <input type="hidden" name="productId" value="@item.Product.IdProduct" />
+                                <button type="submit" name="quantity" value="@((item.Quantity > 1) ? item.Quantity - 1 : 1)" class="btn btn-sm btn-outline-secondary">-</button>
+                                <span class="mx-3">@item.Quantity</span>
+                                <button type="submit" name="quantity" value="@((item.Quantity < item.Product.Stock) ? item.Quantity + 1 : item.Product.Stock)" class="btn btn-sm btn-outline-secondary">+</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+
+    <div class="d-flex justify-content-end mt-4">
+        <div class="col-md-4">
+            <h4>Итоговая сумма: <span id="totalPrice">@totalAmount ₽</span></h4> <!-- Здесь можно динамически выводить сумму -->
+            <a class="btn btn-success w-100 mt-3" type="button" asp-controller="Home" asp-action="Order">Заказать</a>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,33 @@
+﻿@model WebApplication11.Models.User
+
+@{
+    ViewData["Title"] = "Профиль";
+}
+
+<div class="container mt-5">
+    <h1 class="text-center">Профиль</h1>
+
+    <div class="row justify-content-center mt-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h3>Ваши данные:</h3>
+                    <p><strong>Электронная почта:</strong><input value="@Model.Email" /></p>
+                    <p><strong>Телефон:</strong><input value="@Model.Phone" /></p>
+                    <p><strong>Адрес:</strong><input value="@Model.Address" /></p>
+                    <p><strong>Дата регистрации:</strong>@Model.RegistrationDate</p>
+
+                    <!-- Кнопка редактирования -->
+@*                     <div class="text-center mt-4">
+                        <a href="/Home/EditProfile" class="btn btn-primary">Редактировать профиль</a>
+                    </div> *@
+
+                    <!-- Кнопка выхода -->
+                    <div class="text-center mt-4">
+                        <a href="/Home/Logout" class="btn btn-danger">Выйти</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

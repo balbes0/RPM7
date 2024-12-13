@@ -1,0 +1,75 @@
+﻿@{
+    ViewData["Title"] = "Каталог";
+}
+
+@model IEnumerable<WebApplication11.Models.Catalog>
+
+<div>
+    <form class="d-flex align-items-center">
+        <!-- Кнопки фильтров -->
+        <div style="margin-right:10px">
+            <div class="btn-group" role="group">
+                <button type="submit" name="filter" value="Баранина" class="btn btn-primary">Баранина</button>
+                <button type="submit" name="filter" value="Свинина" class="btn btn-primary">Свинина</button>
+                <button type="submit" name="filter" value="Говядина" class="btn btn-primary">Говядина</button>
+            </div>
+        </div>
+
+        <!-- Поле поиска -->
+        <input name="search" class="form-control me-2" type="search" placeholder="Поиск" aria-label="Поиск">
+
+        <!-- Кнопка поиска -->
+        <button class="btn btn-outline-success me-2" type="submit">Поиск</button>
+
+        <!-- Кнопка сортировки -->
+        <div class="btn-group" role="group" aria-label="Сортировка">
+            <button class="btn btn-outline-secondary" type="submit" name="sort" value="price-asc" title="Сортировать по возрастанию цены">
+                <i class="bi bi-arrow-up"></i> Дешевле
+            </button>
+            <button class="btn btn-outline-secondary" type="submit" name="sort" value="price-desc" title="Сортировать по убыванию цены">
+                <i class="bi bi-arrow-down"></i> Дороже
+            </button>
+        </div>
+
+        <!-- Кнопка очистки фильтров -->
+        <a href="/Home/Catalog" class="btn btn-secondary ms-2">Очистить</a>
+    </form>
+
+    <div style="margin-top:20px">
+        <div class="row">
+            @foreach (var item in Model)
+            {
+                if (item.Stock > 0)
+                {
+                    <div class="col-md-3 mb-3">
+                        <div class="card" style="width: 18rem; height: 28rem; overflow: hidden;">
+                            <img src="@item.PathToImage" class="card-img-top" alt="not found" style="height: 200px; object-fit: cover;">
+                            <div class="card-body" style="display: flex; flex-direction: column; justify-content: space-between;">
+                                <h5 class="card-title" style="height: 3rem; overflow: hidden; text-overflow: ellipsis;">@item.ProductName</h5>
+                                <p class="card-text" style="height: 4rem; overflow: hidden; text-overflow: ellipsis;">@item.Description</p> 
+                                <p class="card-text"><strong>Цена:</strong> @item.Price ₽</p>
+                               
+                                @if (item.IsInCart)
+                                {
+                                    <form action="/Home/RemoveCartItem" method="post" style="margin-top: auto;">
+                                        <input type="hidden" name="productId" value="@item.IdProduct" />
+                                        <input type="hidden" name="redirectTo" value="Catalog" />
+                                        <button type="submit" class="btn btn-danger">Из корзины</button>
+                                    </form>
+                                }
+                                else
+                                {
+                                    <form action="/Home/AddToCart" method="post" style="margin-top: auto;">
+                                        <input type="hidden" name="productId" value="@item.IdProduct" />
+                                        <button type="submit" class="btn btn-primary">В корзину</button>
+                                    </form>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                }
+            }
+        </div>
+    </div>
+
+</div>
