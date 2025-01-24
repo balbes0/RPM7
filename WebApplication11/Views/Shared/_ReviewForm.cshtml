@@ -1,0 +1,20 @@
+﻿@model int
+
+<form method="post" action="/Home/AddReview">
+    <input type="hidden" name="productId" value="@Model" />
+    <div class="mb-3">
+        <label for="rating" class="form-label">Рейтинг:</label>
+        <select name="rating" id="rating" class="form-select">
+            <option value="1">★ 1</option>
+            <option value="2">★ 2</option>
+            <option value="3">★ 3</option>
+            <option value="4">★ 4</option>
+            <option value="5">★ 5</option>
+        </select>
+    </div>
+    <div class="mb-3">
+        <label for="reviewText" class="form-label">Отзыв:</label>
+        <textarea name="reviewText" id="reviewText" class="form-control" rows="3"></textarea>
+    </div>
+    <button type="submit" class="btn btn-primary">Добавить отзыв</button>
+</form>

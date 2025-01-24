@@ -40,7 +40,7 @@ app.MapControllerRoute(
 
 app.MapEasyData(options =>
 {
-    options.UseDbContext<Rpm2Context>(); // Подключение контекста
+    options.UseDbContext<Rpm2Context>();
 });
 
 

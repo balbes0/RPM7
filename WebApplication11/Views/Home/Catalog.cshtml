@@ -1,5 +1,7 @@
 ﻿@{
     ViewData["Title"] = "Каталог";
+    var isAuthenticated = Context.Session.GetString("IsAuthenticated");
+    var roleId = Context.Session.GetInt32("RoleID");
 }
 
 @model IEnumerable<WebApplication11.Models.Catalog>
@@ -42,13 +44,27 @@
                 if (item.Stock > 0)
                 {
                     <div class="col-md-3 mb-3">
-                        <div class="card" style="width: 18rem; height: 28rem; overflow: hidden;">
+                        <div class="card" style="width: 18rem; height: auto; overflow: hidden;">
                             <img src="@item.PathToImage" class="card-img-top" alt="not found" style="height: 200px; object-fit: cover;">
                             <div class="card-body" style="display: flex; flex-direction: column; justify-content: space-between;">
                                 <h5 class="card-title" style="height: 3rem; overflow: hidden; text-overflow: ellipsis;">@item.ProductName</h5>
-                                <p class="card-text" style="height: 4rem; overflow: hidden; text-overflow: ellipsis;">@item.Description</p> 
+                                <p class="card-text" style="height: 4rem; overflow: hidden; text-overflow: ellipsis;">@item.Description</p>
                                 <p class="card-text"><strong>Цена:</strong> @item.Price ₽</p>
-                               
+                                @if (item.ReviewCount > 0)
+                                {
+                                    <a href="/Home/Reviews/@item.IdProduct" class="card-text" style="text-decoration: none;">
+                                        ★ @item.AverageRating • @item.ReviewCount отзывов
+                                    </a>
+                                }
+                                else
+                                {
+                                    <a href="/Home/Reviews/@item.IdProduct" class="card-text" style="text-decoration: none;">
+                                        Оставьте первый отзыв
+                                    </a>
+                                }
+
+
+
                                 @if (item.IsInCart)
                                 {
                                     <form action="/Home/RemoveCartItem" method="post" style="margin-top: auto;">
@@ -71,5 +87,4 @@
             }
         </div>
     </div>
-
 </div>

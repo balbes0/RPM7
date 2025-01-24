@@ -1,0 +1,34 @@
+﻿@model WebApplication11.Models.ProductReviewsViewModel
+
+@{
+    ViewData["Title"] = "Отзывы о товаре";
+}
+
+@if (ViewBag.ErrorMessage != null)
+{
+    <div class="alert alert-danger">@ViewBag.ErrorMessage</div>
+}
+
+<h1>Отзывы о товаре: @Model.ProductName</h1>
+
+<!-- Список отзывов -->
+<div>
+    @await Html.PartialAsync("_ReviewForm", Model.ProductId)
+    @if (!Model.Reviews.Any())
+    {
+        <p>Отзывов пока нет. Будьте первым!</p>
+    }
+    else
+    {
+        @foreach (var review in Model.Reviews)
+        {
+            <div class="review">
+                <p><strong>Пользователь:</strong> @review.FirstName @review.LastName</p> <!-- Можно заменить на имя пользователя -->
+                <p><strong>Рейтинг:</strong> ★ @review.Rating</p>
+                <p><strong>Отзыв:</strong> @review.ReviewText</p>
+                <p><em>@review.CreatedDate</em></p>
+                <hr />
+            </div>
+        }
+    }
+</div>

@@ -11,6 +11,63 @@ namespace WebApplication11.Controllers
 {
     public class HomeController : Controller
     {
+        public IActionResult Reviews(int id)
+        {
+            var product = db.Catalogs.FirstOrDefault(p => p.IdProduct == id);
+            if (product == null)
+            {
+                return NotFound("Товар не найден.");
+            }
+
+            var reviews = db.Reviews
+                .Where(r => r.ProductId == id)
+                .ToList();
+
+            foreach (var review in reviews)
+            {
+                var user = db.Users.FirstOrDefault(u => u.IdUser == review.UserId);
+                if (user != null)
+                {
+                    review.FirstName = user.FirstName;
+                    review.LastName = user.LastName;
+                }
+            }
+
+            var model = new ProductReviewsViewModel
+            {
+                ProductName = product.ProductName,
+                ProductId = product.IdProduct,
+                Reviews = reviews
+            };
+
+            return View(model);
+        }
+
+
+        [HttpPost]
+        public IActionResult AddReview(int productId, int rating, string reviewText)
+        {
+            var userId = HttpContext.Session.GetInt32("UserID"); // Логика получения пользователя
+            if (userId == null)
+            {
+                return RedirectToAction("Authorization");
+            }
+
+            var review = new Review
+            {
+                UserId = userId.Value,
+                ProductId = productId,
+                Rating = rating,
+                ReviewText = reviewText,
+                CreatedDate = DateTime.Now
+            };
+
+            db.Reviews.Add(review);
+            db.SaveChanges();
+
+            return RedirectToAction("Reviews", new { id = productId });
+        }
+
         public static string ComputeSha256Hash(string rawData)
         {
             using (SHA256 sha256Hash = SHA256.Create())
@@ -163,43 +220,57 @@ namespace WebApplication11.Controllers
 
         public async Task<IActionResult> Catalog(string filter, string search, string sort)
         {
-            var catalogs = db.Catalogs.AsQueryable();
-            var userid = HttpContext.Session.GetInt32("UserID");
+            // Загружаем товары вместе с отзывами
+            var query = db.Catalogs.Include(c => c.Reviews).AsQueryable();
+            var userId = HttpContext.Session.GetInt32("UserID");
 
             // Фильтрация
             if (!string.IsNullOrEmpty(filter))
             {
-                catalogs = catalogs.Where(c => c.CategoryName == filter);
+                query = query.Where(c => c.CategoryName == filter);
             }
 
             // Поиск
             if (!string.IsNullOrEmpty(search))
             {
-                catalogs = catalogs.Where(c => c.ProductName.Contains(search) || c.Description.Contains(search));
+                query = query.Where(c => c.ProductName.Contains(search) || c.Description.Contains(search));
             }
 
             // Сортировка
             if (!string.IsNullOrEmpty(sort))
             {
-                catalogs = sort switch
+                query = sort switch
                 {
-                    "price-asc" => catalogs.OrderBy(c => c.Price),
-                    "price-desc" => catalogs.OrderByDescending(c => c.Price),
-                    _ => catalogs
+                    "price-asc" => query.OrderBy(c => c.Price),
+                    "price-desc" => query.OrderByDescending(c => c.Price),
+                    _ => query
                 };
             }
 
-            if (userid != null)
-            {
-                var cartItems = await db.Carts.Where(c => c.UserId == userid).ToListAsync();
+            // Материализуем список товаров
+            var catalogList = await query.ToListAsync();
 
-                foreach (var item in catalogs)
+            // Проверяем корзину, если пользователь авторизован
+            if (userId != null)
+            {
+                var cartItems = await db.Carts.Where(c => c.UserId == userId).ToListAsync();
+                foreach (var item in catalogList)
                 {
                     item.IsInCart = cartItems.Any(c => c.ProductId == item.IdProduct);
                 }
             }
 
-            return View(await catalogs.ToListAsync());
+            // Вычисляем AverageRating и ReviewCount для каждого товара
+            foreach (var item in catalogList)
+            {
+                var ratedReviews = item.Reviews.Where(r => r.Rating.HasValue).ToList();
+                item.ReviewCount = ratedReviews.Count;
+                item.AverageRating = ratedReviews.Any()
+                    ? ratedReviews.Average(r => r.Rating.Value)
+                    : 0;
+            }
+
+            return View(catalogList);
         }
 
 

@@ -26,6 +26,13 @@ public partial class Catalog
 
     public virtual ICollection<PosOrder> PosOrders { get; set; } = new List<PosOrder>();
 
+    public virtual ICollection<Review> Reviews { get; set; } = new List<Review>();
+
+
     [NotMapped]
     public bool IsInCart { get; set; }
+    [NotMapped]
+    public double AverageRating { get; set; }
+    [NotMapped]
+    public int ReviewCount { get; set; }
 }
