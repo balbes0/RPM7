@@ -47,7 +47,7 @@ namespace WebApplication11.Controllers
         [HttpPost]
         public IActionResult AddReview(int productId, int rating, string reviewText)
         {
-            var userId = HttpContext.Session.GetInt32("UserID"); // Логика получения пользователя
+            var userId = HttpContext.Session.GetInt32("UserID");
             if (userId == null)
             {
                 return RedirectToAction("Authorization");

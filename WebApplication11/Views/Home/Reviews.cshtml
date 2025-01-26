@@ -23,7 +23,7 @@
         @foreach (var review in Model.Reviews)
         {
             <div class="review">
-                <p><strong>Пользователь:</strong> @review.FirstName @review.LastName</p> <!-- Можно заменить на имя пользователя -->
+                <p><strong>Пользователь:</strong> @review.FirstName @review.LastName</p>
                 <p><strong>Рейтинг:</strong> ★ @review.Rating</p>
                 <p><strong>Отзыв:</strong> @review.ReviewText</p>
                 <p><em>@review.CreatedDate</em></p>
