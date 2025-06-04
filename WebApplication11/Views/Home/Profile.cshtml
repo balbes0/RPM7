@@ -1,33 +1,45 @@
-﻿@model WebApplication11.Models.User
-
-@{
+﻿@{
     ViewData["Title"] = "Профиль";
 }
+
+@model WebApplication11.Models.Helpers.UserProfileDto
 
 <div class="container mt-5">
     <h1 class="text-center">Профиль</h1>
 
-    <div class="row justify-content-center mt-4">
-        <div class="col-md-6">
-            <div class="card">
-                <div class="card-body">
-                    <h3>Ваши данные:</h3>
-                    <p><strong>Электронная почта:</strong><input value="@Model.Email" /></p>
-                    <p><strong>Телефон:</strong><input value="@Model.Phone" /></p>
-                    <p><strong>Адрес:</strong><input value="@Model.Address" /></p>
-                    <p><strong>Дата регистрации:</strong>@Model.RegistrationDate</p>
+    @if (ViewBag.ErrorMessage != null)
+    {
+        <div class="alert alert-danger" role="alert">@ViewBag.ErrorMessage</div>
+    }
 
-                    <!-- Кнопка редактирования -->
-@*                     <div class="text-center mt-4">
-                        <a href="/Home/EditProfile" class="btn btn-primary">Редактировать профиль</a>
-                    </div> *@
+    @if (Model == null)
+    {
+        <div class="alert alert-warning" role="alert">Данные пользователя не найдены.</div>
+    }
+    else
+    {
+        <div class="row justify-content-center mt-4">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h3>Ваши данные:</h3>
+                        <p><strong>Электронная почта:</strong> <span>@(Model.Email ?? "Не указана")</span></p>
+                        <p><strong>Телефон:</strong> <span>@Model.Phone</span></p>
+                        <p><strong>Имя:</strong> <span>@(Model.FirstName ?? "Не указано")</span></p>
+                        <p><strong>Фамилия:</strong> <span>@(Model.LastName ?? "Не указана")</span></p>
+                        <p><strong>Адрес:</strong> <span>@(Model.Address ?? "Не указан")</span></p>
+                        <p><strong>Дата регистрации:</strong> <span>@(Model.RegistrationDate?.ToString("dd.MM.yyyy") ?? "Не указана")</span></p>
 
-                    <!-- Кнопка выхода -->
-                    <div class="text-center mt-4">
-                        <a href="/Home/Logout" class="btn btn-danger">Выйти</a>
+                        <!-- Форма выхода -->
+                        <div class="text-center mt-4">
+                            <form asp-controller="Home" asp-action="Logout" method="post">
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="btn btn-danger" aria-label="Выйти из аккаунта">Выйти</button>
+                            </form>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
+    }
 </div>

@@ -1,20 +1,18 @@
 using EasyData.Services;
 using Microsoft.EntityFrameworkCore;
 using WebApplication11.Models;
+using WebApplication11.Models.Helpers;
 
 var builder = WebApplication.CreateBuilder(args);
 
-
 builder.Services.AddSession(options =>
 {
-    options.IdleTimeout = TimeSpan.FromMinutes(30);  
-    options.Cookie.HttpOnly = true;                  
-    options.Cookie.IsEssential = true;               
+    options.IdleTimeout = TimeSpan.FromMinutes(30);
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
 });
 
-builder.Services.AddDbContext<WebApplication11.Models.Rpm2Context>(x =>
-    x.UseSqlServer(builder.Configuration.GetConnectionString("con")));
-
+builder.Services.AddHttpClient<ApiService>();
 builder.Services.AddControllersWithViews();
 
 var app = builder.Build();
@@ -30,7 +28,7 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
-app.UseSession(); 
+app.UseSession();
 
 app.UseAuthorization();
 

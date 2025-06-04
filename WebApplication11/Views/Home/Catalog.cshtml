@@ -1,30 +1,29 @@
-﻿@{
+﻿
+@{
     ViewData["Title"] = "Каталог";
     var isAuthenticated = Context.Session.GetString("IsAuthenticated");
     var roleId = Context.Session.GetInt32("RoleID");
 }
 
-@model IEnumerable<WebApplication11.Models.Catalog>
+@model IEnumerable<WebApplication11.Models.Helpers.CatalogDto>
 
-<div>
-    <form class="d-flex align-items-center">
+<div class="container mt-4">
+    <form asp-controller="Home" asp-action="Catalog" method="get" class="d-flex align-items-center mb-4">
         <!-- Кнопки фильтров -->
-        <div style="margin-right:10px">
-            <div class="btn-group" role="group">
-                <button type="submit" name="filter" value="Баранина" class="btn btn-primary">Баранина</button>
-                <button type="submit" name="filter" value="Свинина" class="btn btn-primary">Свинина</button>
-                <button type="submit" name="filter" value="Говядина" class="btn btn-primary">Говядина</button>
-            </div>
+        <div class="btn-group me-3" role="group" aria-label="Фильтры по категориям">
+            <button type="submit" name="filter" value="Баранина" class="btn btn-primary">Баранина</button>
+            <button type="submit" name="filter" value="Свинина" class="btn btn-primary">Свинина</button>
+            <button type="submit" name="filter" value="Говядина" class="btn btn-primary">Говядина</button>
         </div>
 
         <!-- Поле поиска -->
-        <input name="search" class="form-control me-2" type="search" placeholder="Поиск" aria-label="Поиск">
+        <input name="search" class="form-control me-2" type="search" placeholder="Поиск" aria-label="Поиск" value="@(ViewData["Search"]?.ToString())" />
 
         <!-- Кнопка поиска -->
         <button class="btn btn-outline-success me-2" type="submit">Поиск</button>
 
         <!-- Кнопка сортировки -->
-        <div class="btn-group" role="group" aria-label="Сортировка">
+        <div class="btn-group me-2" role="group" aria-label="Сортировка">
             <button class="btn btn-outline-secondary" type="submit" name="sort" value="price-asc" title="Сортировать по возрастанию цены">
                 <i class="bi bi-arrow-up"></i> Дешевле
             </button>
@@ -34,57 +33,58 @@
         </div>
 
         <!-- Кнопка очистки фильтров -->
-        <a href="/Home/Catalog" class="btn btn-secondary ms-2">Очистить</a>
+        <a href="@Url.Action("Catalog", "Home")" class="btn btn-secondary">Очистить</a>
     </form>
 
-    <div style="margin-top:20px">
+    @if (Model == null || !Model.Any())
+    {
+        <div class="alert alert-info" role="alert">Товары не найдены.</div>
+    }
+    else
+    {
         <div class="row">
-            @foreach (var item in Model)
+            @foreach (var item in Model.Where(i => i.Stock > 0))
             {
-                if (item.Stock > 0)
-                {
-                    <div class="col-md-3 mb-3">
-                        <div class="card" style="width: 18rem; height: auto; overflow: hidden;">
-                            <img src="@item.PathToImage" class="card-img-top" alt="not found" style="height: 200px; object-fit: cover;">
-                            <div class="card-body" style="display: flex; flex-direction: column; justify-content: space-between;">
-                                <h5 class="card-title" style="height: 3rem; overflow: hidden; text-overflow: ellipsis;">@item.ProductName</h5>
-                                <p class="card-text" style="height: 4rem; overflow: hidden; text-overflow: ellipsis;">@item.Description</p>
-                                <p class="card-text"><strong>Цена:</strong> @item.Price ₽</p>
-                                @if (item.ReviewCount > 0)
-                                {
-                                    <a href="/Home/Reviews/@item.IdProduct" class="card-text" style="text-decoration: none;">
-                                        ★ @item.AverageRating • @item.ReviewCount отзывов
-                                    </a>
-                                }
-                                else
-                                {
-                                    <a href="/Home/Reviews/@item.IdProduct" class="card-text" style="text-decoration: none;">
-                                        Оставьте первый отзыв
-                                    </a>
-                                }
+                <div class="col-md-3 mb-3">
+                    <div class="card" style="width: 18rem; height: auto; overflow: hidden;">
+                        <img src="@(item.PathToImage ?? "/images/placeholder.jpg")" class="card-img-top" alt="@item.ProductName" style="height: 200px; object-fit: cover;">
+                        <div class="card-body" style="display: flex; flex-direction: column; justify-content: space-between;">
+                            <h5 class="card-title" style="height: 3rem; overflow: hidden; text-overflow: ellipsis;">@item.ProductName</h5>
+                            <p class="card-text" style="height: 4rem; overflow: hidden; text-overflow: ellipsis;">@item.Description</p>
+                            <p class="card-text"><strong>Цена:</strong> @item.Price ₽</p>
+                            @if (item.ReviewCount > 0)
+                            {
+                                <a asp-controller="Home" asp-action="Reviews" asp-route-id="@item.IdProduct" class="card-text" style="text-decoration: none;">
+                                    ★ @item.AverageRating.ToString("F1") • @item.ReviewCount отзывов
+                                </a>
+                            }
+                            else
+                            {
+                                <a asp-controller="Home" asp-action="Reviews" asp-route-id="@item.IdProduct" class="card-text" style="text-decoration: none;">
+                                    Оставьте первый отзыв
+                                </a>
+                            }
 
-
-
-                                @if (item.IsInCart)
-                                {
-                                    <form action="/Home/RemoveCartItem" method="post" style="margin-top: auto;">
-                                        <input type="hidden" name="productId" value="@item.IdProduct" />
-                                        <input type="hidden" name="redirectTo" value="Catalog" />
-                                        <button type="submit" class="btn btn-danger">Из корзины</button>
-                                    </form>
-                                }
-                                else
-                                {
-                                    <form action="/Home/AddToCart" method="post" style="margin-top: auto;">
-                                        <input type="hidden" name="productId" value="@item.IdProduct" />
-                                        <button type="submit" class="btn btn-primary">В корзину</button>
-                                    </form>
-                                }
-                            </div>
+                            @if (item.IsInCart)
+                            {
+                                <form asp-controller="Home" asp-action="RemoveCartItem" method="post" style="margin-top: auto;">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="productId" value="@item.IdProduct" />
+                                    <button type="submit" class="btn btn-danger">Из корзины</button>
+                                </form>
+                            }
+                            else
+                            {
+                                <form asp-controller="Home" asp-action="AddToCart" method="post" style="margin-top: auto;">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="productId" value="@item.IdProduct" />
+                                    <button type="submit" class="btn btn-primary">В корзину</button>
+                                </form>
+                            }
                         </div>
                     </div>
-                }
+                </div>
             }
         </div>
-    </div>
+    }
 </div>

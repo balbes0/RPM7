@@ -1,52 +1,53 @@
 ﻿@{
-    var isAuthenticated = Context.Session.GetString("IsAuthenticated");
+    var isAuthenticated = Context.Session.GetString("IsAuthenticated") == "true";
     var roleId = Context.Session.GetInt32("RoleID");
 }
 
 <header>
-    <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
+    <nav class="navbar navbar-expand-sm navbar-light bg-white border-bottom box-shadow mb-3">
         <div class="container-fluid">
-            <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">Pelmen</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                    aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
+            <a class="navbar-brand" asp-controller="Home" asp-action="Index">Pelmen</a>
+            <div class="d-flex flex-column flex-sm-row justify-content-between w-100">
                 <ul class="navbar-nav flex-grow-1">
                     <li class="nav-item">
-                        <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Главная</a>
+                        <a class="nav-link text-dark" asp-controller="Home" asp-action="Index" aria-label="Перейти на главную страницу">Главная</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Catalog">Каталог</a>
+                        <a class="nav-link text-dark" asp-controller="Home" asp-action="Catalog" aria-label="Перейти в каталог">Каталог</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Cart">Корзина</a>
+                        <a class="nav-link text-dark" asp-controller="Home" asp-action="Cart" aria-label="Перейти в корзину">Корзина</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="AboutUs">О нас</a>
+                        <a class="nav-link text-dark" asp-controller="Home" asp-action="AboutUs" aria-label="Перейти на страницу о нас">О нас</a>
                     </li>
-
                     @if (roleId == 1)
                     {
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="EasyData">Админ панель*</a>
+                            <a class="nav-link text-dark" asp-controller="Home" asp-action="EasyData" aria-label="Перейти в админ-панель">Админ панель</a>
                         </li>
                     }
                 </ul>
-                <ul class="navbar-nav ml-auto">
-                    @if (isAuthenticated != "true")
+                <ul class="navbar-nav">
+                    @if (!isAuthenticated)
                     {
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Authorization">Войти</a>
+                            <a class="nav-link text-dark" asp-controller="Home" asp-action="Login" aria-label="Перейти на страницу входа">Войти</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Registration">Регистрация</a>
+                            <a class="nav-link text-dark" asp-controller="Home" asp-action="Register" aria-label="Перейти на страницу регистрации">Регистрация</a>
                         </li>
                     }
                     else
                     {
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Profile">Профиль</a>
+                            <a class="nav-link text-dark" asp-controller="Home" asp-action="Profile" aria-label="Перейти в профиль">Профиль</a>
+                        </li>
+                        <li class="nav-item">
+                            <form asp-controller="Home" asp-action="Logout" method="post" class="d-inline">
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="nav-link btn btn-link text-dark" aria-label="Выйти из аккаунта">Выйти</button>
+                            </form>
                         </li>
                     }
                 </ul>

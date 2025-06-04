@@ -1,33 +1,45 @@
-﻿@model WebApplication11.Models.ProductReviewsViewModel
-
-@{
+﻿@{
     ViewData["Title"] = "Отзывы о товаре";
 }
 
-@if (ViewBag.ErrorMessage != null)
-{
-    <div class="alert alert-danger">@ViewBag.ErrorMessage</div>
-}
+@model WebApplication11.Models.Helpers.ProductReviewsViewModelDto
 
-<h1>Отзывы о товаре: @Model.ProductName</h1>
+<div class="container mt-5">
+    <h1>Отзывы о товаре: @(Model?.ProductName ?? "Неизвестный товар")</h1>
 
-<!-- Список отзывов -->
-<div>
-    @await Html.PartialAsync("_ReviewForm", Model.ProductId)
-    @if (!Model.Reviews.Any())
+    @if (ViewBag.ErrorMessage != null)
     {
-        <p>Отзывов пока нет. Будьте первым!</p>
+        <div class="alert alert-danger" role="alert">@ViewBag.ErrorMessage</div>
+    }
+
+    @if (Model == null)
+    {
+        <div class="alert alert-warning" role="alert">Товар не найден.</div>
     }
     else
     {
-        @foreach (var review in Model.Reviews)
+        <!-- Форма для добавления отзыва -->
+        @await Html.PartialAsync("_ReviewForm", Model.ProductId)
+
+        <!-- Список отзывов -->
+        @if (!Model.Reviews.Any())
         {
-            <div class="review">
-                <p><strong>Пользователь:</strong> @review.FirstName @review.LastName</p>
-                <p><strong>Рейтинг:</strong> ★ @review.Rating</p>
-                <p><strong>Отзыв:</strong> @review.ReviewText</p>
-                <p><em>@review.CreatedDate</em></p>
-                <hr />
+            <p class="mt-4">Отзывов пока нет. Будьте первым!</p>
+        }
+        else
+        {
+            <div class="mt-4">
+                @foreach (var review in Model.Reviews)
+                {
+                    <div class="card mb-3">
+                        <div class="card-body">
+                            <p class="card-text"><strong>Пользователь:</strong> @(review.FirstName ?? "Аноним") @(review.LastName ?? "")</p>
+                            <p class="card-text"><strong>Рейтинг:</strong> ★ @review.Rating</p>
+                            <p class="card-text"><strong>Отзыв:</strong> @(review.ReviewText ?? "Без текста")</p>
+                            <p class="card-text"><em>@(review.CreatedDate?.ToString("dd.MM.yyyy HH:mm") ?? "Дата неизвестна")</em></p>
+                        </div>
+                    </div>
+                }
             </div>
         }
     }

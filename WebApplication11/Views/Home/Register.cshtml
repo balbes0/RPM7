@@ -1,0 +1,79 @@
+﻿@{
+    ViewData["Title"] = "Регистрация";
+}
+
+<div class="container mt-5">
+    <h1 class="text-center">Регистрация</h1>
+
+    @if (ViewBag.ErrorMessage != null)
+    {
+        <div class="alert alert-danger" role="alert">@ViewBag.ErrorMessage</div>
+    }
+
+    <div class="row justify-content-center mt-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <form asp-controller="Home" asp-action="Register" method="post">
+                        @Html.AntiForgeryToken()
+
+                        <div class="form-group mb-3">
+                            <label for="phoneNumber" class="form-label">Номер телефона</label>
+                            <input type="tel"
+                                   class="form-control"
+                                   id="phoneNumber"
+                                   name="PhoneNumber"
+                                   placeholder="Введите ваш номер телефона"
+                                   required
+                                   pattern="^((8|\+7)[\- ]?)?(\(?\d{3}\)?[\- ]?)?[\d\- ]{7,10}$"
+                                   aria-describedby="phoneHelp" />
+                            <small id="phoneHelp" class="form-text text-muted">Формат: +7(XXX)XXX-XX-XX или 8XXXXXXXXXX</small>
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label for="email" class="form-label">Электронная почта</label>
+                            <input type="email"
+                                   class="form-control"
+                                   id="email"
+                                   name="Email"
+                                   placeholder="Введите вашу почту"
+                                   required
+                                   aria-describedby="emailHelp" />
+                            <small id="emailHelp" class="form-text text-muted">Введите действующий адрес электронной почты.</small>
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label for="password" class="form-label">Пароль</label>
+                            <input type="password"
+                                   class="form-control"
+                                   id="password"
+                                   name="Password"
+                                   placeholder="Введите пароль"
+                                   required
+                                   minlength="6"
+                                   aria-describedby="passwordHelp" />
+                            <small id="passwordHelp" class="form-text text-muted">Пароль должен быть не короче 6 символов.</small>
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label for="confirmPassword" class="form-label">Подтверждение пароля</label>
+                            <input type="password"
+                                   class="form-control"
+                                   id="confirmPassword"
+                                   name="ConfirmPassword"
+                                   placeholder="Подтвердите пароль"
+                                   required
+                                   minlength="6" />
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100 mt-3">Зарегистрироваться</button>
+                    </form>
+
+                    <div class="text-center mt-4">
+                        <p>Уже есть аккаунт? <a asp-controller="Home" asp-action="Login">Войти</a></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
