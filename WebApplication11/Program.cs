@@ -4,12 +4,12 @@ using WebApplication11.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Добавление сессий
+
 builder.Services.AddSession(options =>
 {
-    options.IdleTimeout = TimeSpan.FromMinutes(30);  // Настройка времени жизни сессии
-    options.Cookie.HttpOnly = true;                   // Ограничение доступа cookie только сервером
-    options.Cookie.IsEssential = true;                // Устанавливает cookie как обязательное
+    options.IdleTimeout = TimeSpan.FromMinutes(30);  
+    options.Cookie.HttpOnly = true;                  
+    options.Cookie.IsEssential = true;               
 });
 
 builder.Services.AddDbContext<WebApplication11.Models.Rpm2Context>(x =>
@@ -30,7 +30,7 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
-app.UseSession();  // Добавление сессий
+app.UseSession(); 
 
 app.UseAuthorization();
 
