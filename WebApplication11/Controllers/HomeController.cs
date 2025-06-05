@@ -1,10 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using System.Diagnostics;
-using System.Reflection.Metadata;
-using System.Security.Cryptography;
-using System.Text;
-using System.Text.RegularExpressions;
 using WebApplication11.Models;
 using WebApplication11.Models.Helpers;
 
@@ -19,7 +13,18 @@ namespace WebApplication11.Controllers
             _apiService = apiService;
         }
 
-        // Главная страница - список товаров
+        private bool IsAuthenticated => HttpContext.Session.GetString("IsAuthenticated") == "true";
+
+        private IActionResult RedirectToLoginIfUnauthorized(string returnUrl = null)
+        {
+            if (!IsAuthenticated)
+            {
+                var loginUrl = Url.Action("Login", "Home", new { returnUrl = returnUrl ?? Request.Path + Request.QueryString });
+                return Redirect(loginUrl);
+            }
+            return null;
+        }
+
         public async Task<IActionResult> Index()
         {
             try
@@ -34,13 +39,12 @@ namespace WebApplication11.Controllers
             }
         }
 
-        // Каталог с фильтрацией, поиском и сортировкой
         public async Task<IActionResult> Catalog(string? filter, string? search, string? sort)
         {
             try
             {
                 var catalogList = await _apiService.GetCatalogAsync(filter, search, sort);
-                ViewData["Search"] = search; 
+                ViewData["Search"] = search;
                 return View(catalogList);
             }
             catch (HttpRequestException ex)
@@ -50,26 +54,36 @@ namespace WebApplication11.Controllers
             }
         }
 
-        // Отзывы для товара
         public async Task<IActionResult> Reviews(int id)
         {
-            var reviews = await _apiService.GetReviewsAsync(id);
-            return View(reviews);
+            try
+            {
+                var reviews = await _apiService.GetReviewsAsync(id);
+                return View(reviews);
+            }
+            catch (HttpRequestException ex)
+            {
+                ViewBag.ErrorMessage = "Ошибка при загрузке отзывов: " + ex.Message;
+                return View(new ProductReviewsViewModelDto());
+            }
         }
 
-        // Добавление отзыва
         [HttpPost]
         public async Task<IActionResult> AddReview(AddReviewRequest request)
         {
-            var success = await _apiService.AddReviewAsync(request);
+            var redirect = RedirectToLoginIfUnauthorized(Url.Action("Reviews", new { id = request.ProductId }));
+            if (redirect != null) return redirect;
+
+            var (success, errorMessage) = await _apiService.AddReviewAsync(request);
             if (success)
             {
                 return RedirectToAction("Reviews", new { id = request.ProductId });
             }
-            return BadRequest("Не удалось добавить отзыв.");
+            ViewBag.ErrorMessage = errorMessage;
+            var reviews = await _apiService.GetReviewsAsync(request.ProductId);
+            return View("Reviews", reviews);
         }
 
-        // Форма регистрации
         public IActionResult Register()
         {
             return View();
@@ -95,38 +109,41 @@ namespace WebApplication11.Controllers
             }
         }
 
-        // Форма входа
-        public IActionResult Login()
+        public IActionResult Login(string returnUrl = null)
         {
+            ViewBag.ReturnUrl = returnUrl;
             return View();
         }
 
         [HttpPost]
-        public async Task<IActionResult> Login(LoginRequest request)
+        public async Task<IActionResult> Login(LoginRequest request, string returnUrl = null)
         {
-            var user = await _apiService.LoginAsync(request);
+            var (user, errorMessage) = await _apiService.LoginAsync(request);
             if (user != null)
             {
-                HttpContext.Session.SetInt32("UserID", user.IdUser);
-                HttpContext.Session.SetString("IsAuthenticated", "true");
-                HttpContext.Session.SetInt32("RoleID", user.RoleId);
-                return RedirectToAction("Index");
+                return !string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl)
+                    ? Redirect(returnUrl)
+                    : RedirectToAction("Index");
             }
+            ViewBag.ErrorMessage = errorMessage;
+            ViewBag.ReturnUrl = returnUrl;
             return View(request);
         }
 
-        // Профиль пользователя
         public async Task<IActionResult> Profile()
         {
+            var redirect = RedirectToLoginIfUnauthorized();
+            if (redirect != null) return redirect;
+
             try
             {
-                var user = await _apiService.GetProfileAsync();
-                if (user == null)
+                var (profile, errorMessage) = await _apiService.GetProfileAsync();
+                if (profile == null)
                 {
-                    ViewBag.ErrorMessage = "Не удалось загрузить данные профиля.";
+                    ViewBag.ErrorMessage = errorMessage;
                     return View();
                 }
-                return View(user);
+                return View(profile);
             }
             catch (HttpRequestException ex)
             {
@@ -135,84 +152,157 @@ namespace WebApplication11.Controllers
             }
         }
 
-        // Выход
         [HttpPost]
         public async Task<IActionResult> Logout()
         {
             await _apiService.LogoutAsync();
-            HttpContext.Session.Clear();
             return RedirectToAction("Index");
         }
 
-        // EasyData (только для администраторов)
         public async Task<IActionResult> EasyData()
         {
-            var result = await _apiService.GetEasyDataAsync();
-            return View(model: result);
+            var redirect = RedirectToLoginIfUnauthorized();
+            if (redirect != null) return redirect;
+
+            var roleId = HttpContext.Session.GetInt32("RoleID");
+            if (roleId != 1)
+            {
+                return Forbid();
+            }
+
+            try
+            {
+                var (data, errorMessage) = await _apiService.GetEasyDataAsync();
+                if (data == null)
+                {
+                    ViewBag.ErrorMessage = errorMessage;
+                    return View();
+                }
+                ViewBag.EasyData = data;
+                return View();
+            }
+            catch (HttpRequestException ex)
+            {
+                ViewBag.ErrorMessage = "Ошибка при загрузке EasyData: " + ex.Message;
+                return View();
+            }
         }
 
-        // Корзина
         public async Task<IActionResult> Cart()
         {
+            var redirect = RedirectToLoginIfUnauthorized();
+            if (redirect != null) return redirect;
 
-            var cartItems = await _apiService.GetCartAsync();
-            return View(cartItems);
+            try
+            {
+                var (cartItems, errorMessage) = await _apiService.GetCartAsync();
+                if (cartItems == null)
+                {
+                    ViewBag.ErrorMessage = errorMessage;
+                    return View(new List<CartItemDto>());
+                }
+                return View(cartItems);
+            }
+            catch (HttpRequestException ex)
+            {
+                ViewBag.ErrorMessage = "Ошибка при загрузке корзины: " + ex.Message;
+                return View(new List<CartItemDto>());
+            }
         }
 
-        // Добавление в корзину
         [HttpPost]
         public async Task<IActionResult> AddToCart(AddToCartRequest request)
         {
-            var success = await _apiService.AddToCartAsync(request);
+            var redirect = RedirectToLoginIfUnauthorized(Url.Action("Cart"));
+            if (redirect != null) return redirect;
+
+            var (success, errorMessage) = await _apiService.AddToCartAsync(request);
             if (success)
             {
                 return RedirectToAction("Cart");
             }
-            return BadRequest("Не удалось добавить товар в корзину.");
+            ViewBag.ErrorMessage = errorMessage;
+            return RedirectToAction("Catalog");
         }
 
-        // Обновление количества в корзине
         [HttpPost]
         public async Task<IActionResult> UpdateCartQuantity(UpdateCartRequest request)
         {
-            var success = await _apiService.UpdateCartQuantityAsync(request);
+            var redirect = RedirectToLoginIfUnauthorized();
+            if (redirect != null) return redirect;
+
+            var (success, errorMessage) = await _apiService.UpdateCartQuantityAsync(request);
             if (success)
             {
                 return RedirectToAction("Cart");
             }
-            return BadRequest("Не удалось обновить количество.");
+            ViewBag.ErrorMessage = errorMessage;
+            return RedirectToAction("Cart");
         }
 
-        // Удаление из корзины
         [HttpPost]
         public async Task<IActionResult> RemoveCartItem(int productId)
         {
-            var success = await _apiService.RemoveCartItemAsync(productId);
+            var redirect = RedirectToLoginIfUnauthorized();
+            if (redirect != null) return redirect;
+
+            var (success, errorMessage) = await _apiService.RemoveCartItemAsync(productId);
             if (success)
             {
                 return RedirectToAction("Cart");
             }
-            return BadRequest("Не удалось удалить товар из корзины.");
+            ViewBag.ErrorMessage = errorMessage;
+            return RedirectToAction("Cart");
         }
 
-        // Оформление заказа
-        public IActionResult Order()
+        public async Task<IActionResult> Order()
         {
-            return View();
+            var redirect = RedirectToLoginIfUnauthorized();
+            if (redirect != null) return redirect;
+
+            try
+            {
+                var (success, errorMessage) = await _apiService.PlaceOrderAsync();
+                if (success)
+                {
+                    return RedirectToAction("Cart"); // Adjust as needed
+                }
+                ViewBag.ErrorMessage = errorMessage;
+                return View();
+            }
+            catch (HttpRequestException ex)
+            {
+                ViewBag.ErrorMessage = "Ошибка при оформлении заказа: " + ex.Message;
+                return View();
+            }
         }
 
-        // О нас
         public async Task<IActionResult> AboutUs()
         {
-            var info = await _apiService.GetAboutUsAsync();
-            return View(info);
+            try
+            {
+                var aboutUs = await _apiService.GetAboutUsAsync();
+                return View(aboutUs);
+            }
+            catch (HttpRequestException ex)
+            {
+                ViewBag.ErrorMessage = "Ошибка при загрузке информации: " + ex.Message;
+                return View();
+            }
         }
 
-        // Политика конфиденциальности
         public async Task<IActionResult> Privacy()
         {
-            var policy = await _apiService.GetPrivacyAsync();
-            return View(model: policy);
+            try
+            {
+                var policy = await _apiService.GetPrivacyAsync();
+                return View(model: policy);
+            }
+            catch (HttpRequestException ex)
+            {
+                ViewBag.ErrorMessage = "Ошибка при загрузке политики: " + ex.Message;
+                return View();
+            }
         }
     }
 }

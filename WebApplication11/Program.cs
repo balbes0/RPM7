@@ -5,6 +5,10 @@ using WebApplication11.Models.Helpers;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddControllersWithViews();
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddHttpClient<ApiService>();
+builder.Services.AddDistributedMemoryCache();
 builder.Services.AddSession(options =>
 {
     options.IdleTimeout = TimeSpan.FromMinutes(30);
@@ -12,8 +16,8 @@ builder.Services.AddSession(options =>
     options.Cookie.IsEssential = true;
 });
 
-builder.Services.AddHttpClient<ApiService>();
-builder.Services.AddControllersWithViews();
+builder.Services.AddDbContext<Rpm2Context>(x =>
+    x.UseSqlServer(builder.Configuration.GetConnectionString("con")));
 
 var app = builder.Build();
 
@@ -25,11 +29,8 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
-
 app.UseRouting();
-
 app.UseSession();
-
 app.UseAuthorization();
 
 app.MapControllerRoute(
@@ -40,6 +41,5 @@ app.MapEasyData(options =>
 {
     options.UseDbContext<Rpm2Context>();
 });
-
 
 app.Run();
