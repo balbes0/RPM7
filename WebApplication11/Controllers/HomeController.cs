@@ -265,7 +265,7 @@ namespace WebApplication11.Controllers
                 var (success, errorMessage) = await _apiService.PlaceOrderAsync();
                 if (success)
                 {
-                    return RedirectToAction("Cart"); // Adjust as needed
+                    return RedirectToAction("Cart"); 
                 }
                 ViewBag.ErrorMessage = errorMessage;
                 return View();

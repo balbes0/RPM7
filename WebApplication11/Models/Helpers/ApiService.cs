@@ -201,7 +201,6 @@ namespace WebApplication11.Models.Helpers
 
     #region ==== DTO-классы для запросов/ответов ====
 
-    // DTO для отображения товара в каталоге
     public class CatalogDto
     {
         public int IdProduct { get; set; }
@@ -217,7 +216,6 @@ namespace WebApplication11.Models.Helpers
         public bool IsInCart { get; set; }
     }
 
-    // DTO для одиночного отзыва
     public class ReviewDto
     {
         public int IdReview { get; set; }
@@ -230,7 +228,6 @@ namespace WebApplication11.Models.Helpers
         public string? LastName { get; set; }
     }
 
-    // ViewModel-DTO для отзывов
     public class ProductReviewsViewModelDto
     {
         public int ProductId { get; set; }
@@ -238,7 +235,6 @@ namespace WebApplication11.Models.Helpers
         public List<ReviewDto> Reviews { get; set; } = new();
     }
 
-    // DTO для добавления отзыва
     public class AddReviewRequest
     {
         public int ProductId { get; set; }
@@ -246,7 +242,6 @@ namespace WebApplication11.Models.Helpers
         public string ReviewText { get; set; } = null!;
     }
 
-    // DTO для регистрации
     public class RegisterRequest
     {
         public string PhoneNumber { get; set; } = null!;
@@ -255,14 +250,12 @@ namespace WebApplication11.Models.Helpers
         public string ConfirmPassword { get; set; } = null!;
     }
 
-    // DTO для логина
     public class LoginRequest
     {
         public string Email { get; set; } = null!;
         public string Password { get; set; } = null!;
     }
 
-    // DTO для профиля пользователя
     public class UserProfileDto
     {
         public int IdUser { get; set; }
@@ -275,7 +268,6 @@ namespace WebApplication11.Models.Helpers
         public int RoleId { get; set; }
     }
 
-    // DTO для элемента корзины
     public class CartItemDto
     {
         public int ProductId { get; set; }
@@ -288,14 +280,12 @@ namespace WebApplication11.Models.Helpers
         public decimal Total { get; set; }
     }
 
-    // DTO для добавления в корзину
     public class AddToCartRequest
     {
         public int ProductId { get; set; }
         public int Quantity { get; set; } = 1;
     }
 
-    // DTO для обновления количества
     public class UpdateCartRequest
     {
         public int ProductId { get; set; }
